@@ -1,36 +1,85 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SSM Site — README
 
-## Getting Started
+Premium institutional website rebuild for **Shri Shaktimayi Ayurvedic Pharmacy &
+Nursing College** (Shribhagwati Siksha Sewa Trust, Ajhai Khurd, Azamgarh, UP).
+Client demonstration intended to win the tender for website development and
+ongoing maintenance.
 
-First, run the development server:
+Live site (source of truth, preserved untouched): https://shrishaktimayi.com/
+
+## Stack
+
+- Next.js 16 (App Router, static prerender) + TypeScript + Tailwind CSS v4
+- React Hook Form + Zod (enquiry form validation)
+- Framer Motion (restrained reveal animations, `prefers-reduced-motion` aware)
+- No database. Enquiry delivery is **demo mode** by default (see below).
+- Tests: Node 22 built-in test runner (`npm test`), zero extra dev dependencies
+
+## Quick start
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+cd ssm-site
+cp .env.example .env        # optional: defaults are demo-safe
+npm install
+npm run dev                 # http://localhost:3000
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Commands
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+| Command | What it does |
+| ------- | ------------ |
+| `npm run dev` | Local dev server |
+| `npm run build` | Production build (TypeScript + prerender check) |
+| `npm start` | Serve the production build |
+| `npm run lint` | ESLint (Next.js config) |
+| `npm test` | Compile `src/lib` units + run `tests/*.mjs` (Node:test) |
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Enquiry form delivery
 
-## Learn More
+`DELIVERY_MODE` in `.env` controls `POST /api/enquiry`:
 
-To learn more about Next.js, take a look at the following resources:
+| Mode | Behaviour |
+| ---- | --------- |
+| `demo` (default) | Validates + rate-limits, logs to server console only, and tells the visitor honestly: "Recorded locally in demo mode — nothing was emailed or delivered." |
+| `webhook` | POSTs validated JSON to `ENQUIRY_WEBHOOK_URL` (CRM / Apps Script / n8n). |
+| `email` | **Not implemented** — returns HTTP 503 with a call-the-college message rather than pretending to send mail. |
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+Spam protection: honeypot field, 6 s human fill-time check, 5 submissions /
+15 min / IP, JSON-only body cap (20 KB), origin check.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project layout
 
-## Deploy on Vercel
+```text
+src/app/            routes (page.tsx), API route, sitemap, robots, error/404
+src/components/     layout (Header/Footer) · sections (Hero/HomeView) ·
+                    forms (EnquiryForm) · ui (Section, Reveal, GalleryLightbox, FaqList)
+src/data/           content layer — site.ts · courses.ts · facilities.ts ·
+                    admissions.ts · people.ts (+ AGENTS.md contract)
+src/lib/            enquiry-schema.ts · rate-limit.ts · clock.ts (test seam)
+public/images/      real audited photos (hero, about, courses, team, facilities…)
+tests/              node:test suites run against compiled src/lib (npm test)
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Key guarantees
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- No fabricated facts: testimonials render as **"pending client approval"**
+  placeholders; retired marketing claims are audit-trailed in
+  `src/data/site.ts → retiredClaims` and rendered nowhere.
+- Legacy URLs (`/about-us`, `/our-courses`, `/our-teams`, `/our-gallery`,
+  `/contact-us`, `/home`) 308-redirect to the new routes.
+- Security headers: HSTS, CSP, `nosniff`, `SAMEORIGIN`, `Referrer-Policy`,
+  `Permissions-Policy` (see `next.config.ts`).
+- Accessibility: skip link, labelled nav/landmarks, one `h1` per page,
+  keyboard-operable lightbox + mobile menu, visible focus, reduced-motion
+  support, all images carry `alt`.
+- Privacy: no analytics, no third-party trackers, map is a click-to-load
+  static link. See `/privacy` and `PRIVACY.md`.
+
+## Docs
+
+- `AGENTS.md` — content-editing contract (what editors may/may not add)
+- `AUDIT.md` — source-site audit (pages, content, risks, verification flags)
+- `TESTING.md` — QA report + manual checklists
+- `DEPLOY.md` — deployment, backup, rollback, monitoring
+- `PRIVACY.md` — data retention & privacy notes
+- `CONTENT-CHECKLIST.md` — client verification checklist

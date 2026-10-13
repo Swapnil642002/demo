@@ -6,12 +6,17 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "tsc src/lib/rate-limit.ts src/lib/enquiry-schema.ts --outDir .test-build --module nodenext --moduleResolution nodenext --target es2022 --skipLibCheck && node --test 'tests/*.mjs'"
   },
   "dependencies": {
+    "@hookform/resolvers": "^5.9.1",
+    "framer-motion": "^14.1.0",
     "next": "16.4.0",
     "react": "19.3.0",
-    "react-dom": "19.3.0"
+    "react-dom": "19.3.0",
+    "react-hook-form": "^7.90.0",
+    "zod": "^3.25.76"
   },
   "devDependencies": {
     "@tailwindcss/turbopack": "^4",
